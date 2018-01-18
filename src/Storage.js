@@ -98,7 +98,9 @@ module.exports = Storage;
 if (process.env.PARSE_BUILD === 'react-native') {
   CoreManager.setStorageController(require('./StorageController.react-native'));
 } else if (process.env.PARSE_BUILD === 'browser') {
-  CoreManager.setStorageController(require('./StorageController.browser'));
+    CoreManager.setStorageController(require('./StorageController.browser'));
+} else if (process.env.PARSE_BUILD === 'wechat') {
+    CoreManager.setStorageController(require('./StorageController.wechat'));
 } else {
   CoreManager.setStorageController(require('./StorageController.default'));
 }

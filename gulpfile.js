@@ -9,15 +9,17 @@ var replace    = require('gulp-replace');
 var source     = require('vinyl-source-stream');
 var uglify     = require('gulp-uglify');
 
-var BUILD = process.env.PARSE_BUILD || 'browser';
+var BUILD = process.env.PARSE_BUILD || 'wechat';
 var VERSION = require('./package.json').version;
 
 var PRESETS = {
+  'wechat': ['es2015', 'react', 'stage-2'],
   'browser': ['es2015', 'react', 'stage-2'],
   'node': ['es2015', 'react', 'stage-2'],
   'react-native': ['react'],
 };
 var PLUGINS = {
+  'wechat': ['inline-package-json', 'transform-inline-environment-variables', 'transform-runtime'],
   'browser': ['inline-package-json', 'transform-inline-environment-variables', 'transform-runtime'],
   'node': ['inline-package-json', 'transform-inline-environment-variables', 'transform-runtime'],
   'react-native': ['inline-package-json', 'transform-inline-environment-variables'],
@@ -85,4 +87,29 @@ gulp.task('minify', function() {
     .pipe(insert.prepend(FULL_HEADER))
     .pipe(rename({ extname: '.min.js' }))
     .pipe(gulp.dest('./dist'))
+});
+
+
+gulp.task('wechatfy', function () {
+    var stream = browserify({
+        builtins: ['_process', 'events'],
+        entries: 'lib/wechat/Parse.js',
+        standalone: 'Parse'
+    })
+        .exclude('xmlhttprequest')
+        .ignore('_process')
+        .bundle();
+
+    return stream.pipe(source('parse.js'))
+        .pipe(derequire())
+        .pipe(insert.prepend(DEV_HEADER))
+        .pipe(gulp.dest('./dist_wechat'));
+});
+
+gulp.task('wechatminify', function () {
+    return gulp.src('dist_wechat/parse.js')
+        .pipe(uglify())
+        .pipe(insert.prepend(FULL_HEADER))
+        .pipe(rename({ extname: '.min.js' }))
+        .pipe(gulp.dest('./dist_wechat'))
 });

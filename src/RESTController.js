@@ -72,8 +72,38 @@ function ajaxIE9(method: string, url: string, data: any) {
   return promise;
 }
 
+function ajaxWeChat(method: string, url: string, data: any, headers ?: any) {
+    var promise = new ParsePromise();
+    var attempts = 0;
+
+    var dispatch = function () {
+        headers = headers || {};
+        if (typeof (headers['Content-Type']) !== 'string') {
+            headers['Content-Type'] = 'text/plain'; 
+        }
+        wx.request({
+            url, data, method, headers,
+            success: (res) => {
+                promise.resolve(res.data, res.statusCode, res);
+            },
+            fail: (res) => {
+                promise.reject(res.toString());
+            },
+            complete: (res) => {
+            }
+        });
+    }
+    dispatch();
+    return promise;
+}
+
 const RESTController = {
   ajax(method: string, url: string, data: any, headers?: any) {
+
+    if (process.env.PARSE_BUILD === 'wechat') {
+        return ajaxWeChat(method, url, data, headers);
+    }
+
     if (useXDomainRequest) {
       return ajaxIE9(method, url, data, headers);
     }
@@ -143,7 +173,6 @@ const RESTController = {
 
     return promise;
   },
-
   request(method: string, path: string, data: mixed, options?: RequestOptions) {
     options = options || {};
     var url = CoreManager.get('SERVER_URL');

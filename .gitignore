@@ -1,5 +1,6 @@
 coverage
 dist
+dist_wechat
 lib
 logs
 node_modules
